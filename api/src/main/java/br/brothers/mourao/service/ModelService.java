@@ -2,6 +2,7 @@ package br.brothers.mourao.service;
 
 import br.brothers.mourao.exception.CannotGeneratedException;
 import br.brothers.mourao.exception.ModelAlreadyExistsException;
+import br.brothers.mourao.exception.ModelNotExistsException;
 import br.brothers.mourao.persistence.entity.Model;
 import br.brothers.mourao.persistence.repository.ModelRepository;
 import org.slf4j.Logger;
@@ -27,9 +28,14 @@ public class ModelService {
         return modelRepository.findAll();
     }
 
-    public Model findById(String id) {
+    public Model findById(String id)
+        throws ModelNotExistsException {
         LOGGER.info("Searching model by id '{}'", id);
-        return modelRepository.findOne(id);
+        Model model = modelRepository.findOne(id);
+        if (model == null) {
+            throw new ModelNotExistsException(String.format("Model with id '%s' not exists on domain", id));
+        }
+        return model;
     }
 
     public Model findByName(String name) {
@@ -52,7 +58,8 @@ public class ModelService {
         return modelRepository.save(model);
     }
 
-    public Model delete(String id) {
+    public Model delete(String id)
+        throws ModelNotExistsException {
         LOGGER.info("Deleting model by id '{}'", id);
         Model model = findById(id);
         dynamicModelService.dropCollection(model.getName());

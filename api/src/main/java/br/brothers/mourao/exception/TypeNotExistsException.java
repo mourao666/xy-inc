@@ -1,4 +1,4 @@
-package br.brothers.mourao.trash;
+package br.brothers.mourao.exception;
 
 public class TypeNotExistsException extends Exception {
 

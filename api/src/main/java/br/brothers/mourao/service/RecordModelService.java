@@ -1,6 +1,8 @@
 package br.brothers.mourao.service;
 
 import br.brothers.mourao.exception.CannotGeneratedException;
+import br.brothers.mourao.exception.InvalidTypeAttribute;
+import br.brothers.mourao.persistence.entity.Attribute;
 import br.brothers.mourao.persistence.entity.Model;
 import br.brothers.mourao.exception.ModelNotExistsException;
 import org.slf4j.Logger;
@@ -45,20 +47,29 @@ public class RecordModelService {
         return dynamicModelService.findRecord(model, id);
     }
 
-    public Map<String, Object> create(String modelName, Map<String, Object> attributes) {
-        validateAttributes(attributes);
+    public Map<String, Object> create(String modelName, Map<String, Object> attributes)
+        throws ModelNotExistsException,
+            InvalidTypeAttribute {
         attributes.put("_id", UUID.randomUUID().toString());
-        Model model = modelService.findByName(modelName);
-        LOGGER.info("Creating new record for model {} with attributes {}", model, attributes);
-        dynamicModelService.saveRecord(model, attributes);
-        return attributes;
+        return save(modelName, attributes);
     }
 
-    public Map<String, Object> update(String modelName, String id, Map<String, Object> attributes) {
-        validateAttributes(attributes);
+    public Map<String, Object> update(String modelName, String id, Map<String, Object> attributes)
+        throws ModelNotExistsException,
+            InvalidTypeAttribute {
         attributes.put("_id", id);
+        return save(modelName, attributes);
+    }
+
+    private Map<String, Object> save(String modelName, Map<String, Object> attributes)
+        throws ModelNotExistsException,
+            InvalidTypeAttribute {
         Model model = modelService.findByName(modelName);
-        LOGGER.info("Update record id '{}' for model {} with attributes {}", id, model, attributes);
+        if (model == null) {
+            throw new ModelNotExistsException(String.format("Model %s not exists on domain", modelName));
+        }
+        validateAttributes(model, attributes);
+        LOGGER.info("Saving new record for model {} with attributes {}", model, attributes);
         dynamicModelService.saveRecord(model, attributes);
         return attributes;
     }
@@ -73,8 +84,19 @@ public class RecordModelService {
         return record;
     }
 
-    private void validateAttributes(Map<String, Object> attributes) {
-
+    private void validateAttributes(Model model, Map<String, Object> attributes)
+        throws InvalidTypeAttribute {
+        StringBuilder sb = new StringBuilder();
+        for (Attribute attribute : model.getAttributes()) {
+            Class clazz1 = attribute.getType().getClazz();
+            Class clazz2 = attributes.get(attribute.getName()).getClass();
+            if (!clazz1.isAssignableFrom(clazz2)) {
+                sb.append(String.format(" %s.", attribute.getName()));
+            }
+        }
+        if (!sb.toString().isEmpty()) {
+            throw new InvalidTypeAttribute(String.format("Invalid attribute type(s): %s", sb.toString()));
+        }
     }
 
 }

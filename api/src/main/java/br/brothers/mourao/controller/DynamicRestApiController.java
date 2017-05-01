@@ -1,6 +1,7 @@
 package br.brothers.mourao.controller;
 
 import br.brothers.mourao.exception.CannotGeneratedException;
+import br.brothers.mourao.exception.InvalidTypeAttribute;
 import br.brothers.mourao.service.RecordModelService;
 import br.brothers.mourao.exception.ModelNotExistsException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,12 +46,20 @@ public class DynamicRestApiController {
 
     @RequestMapping(value = "/{model}", method = RequestMethod.POST)
     public ResponseEntity create(@PathVariable String model, @RequestBody Map<String, Object> attributes) {
-        return ResponseEntity.ok(recordModelService.create(model, attributes));
+        try {
+            return ResponseEntity.ok(recordModelService.create(model, attributes));
+        } catch (ModelNotExistsException | InvalidTypeAttribute e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
     }
 
     @RequestMapping(value = "/{model}/{id}", method = RequestMethod.PUT)
     public ResponseEntity updateById(@PathVariable String model, @PathVariable String id, @RequestBody Map<String, Object> attributes) {
-        return ResponseEntity.ok(recordModelService.update(model, id, attributes));
+        try {
+            return ResponseEntity.ok(recordModelService.update(model, id, attributes));
+        } catch (ModelNotExistsException | InvalidTypeAttribute e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
     }
 
     @RequestMapping(value = "/{model}/{id}", method = RequestMethod.DELETE)

@@ -25,4 +25,9 @@ public class AttributeBuilder {
         return this;
     }
 
+    public AttributeBuilder typeName(String typeName) {
+        attribute.setTypeName(typeName);
+        return this;
+    }
+
 }

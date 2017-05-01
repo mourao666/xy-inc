@@ -6,11 +6,13 @@ import java.io.Serializable;
 
 public class Attribute implements Serializable {
 
-    private static final long serialVersionUID = -8971574173748191289L;
+    private static final long serialVersionUID = 9188034874654025093L;
 
     private String name;
 
     private Type type;
+
+    private String typeName;
 
     public String getName() {
         return name;
@@ -28,6 +30,14 @@ public class Attribute implements Serializable {
         this.type = type;
     }
 
+    public String getTypeName() {
+        return typeName;
+    }
+
+    public void setTypeName(String typeName) {
+        this.typeName = typeName;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -36,13 +46,15 @@ public class Attribute implements Serializable {
         Attribute attribute = (Attribute) o;
 
         if (name != null ? !name.equals(attribute.name) : attribute.name != null) return false;
-        return type == attribute.type;
+        if (type != attribute.type) return false;
+        return typeName != null ? typeName.equals(attribute.typeName) : attribute.typeName == null;
     }
 
     @Override
     public int hashCode() {
         int result = name != null ? name.hashCode() : 0;
         result = 31 * result + (type != null ? type.hashCode() : 0);
+        result = 31 * result + (typeName != null ? typeName.hashCode() : 0);
         return result;
     }
 
@@ -51,6 +63,7 @@ public class Attribute implements Serializable {
         return "Attribute{" +
                 "name='" + name + '\'' +
                 ", type=" + type +
+                ", typeName='" + typeName + '\'' +
                 '}';
     }
 
