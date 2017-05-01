@@ -43,11 +43,12 @@
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
         </dependency>
-        <!--<dependency>
+        <dependency>
             <groupId>de.flapdoodle.embed</groupId>
             <artifactId>de.flapdoodle.embed.mongo</artifactId>
             <version>2.0.0</version>
-        </dependency>-->
+            <scope>test</scope>
+        </dependency>
         <!-- end::tests[] -->
     </dependencies>
 
@@ -62,7 +63,7 @@
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <!--<configuration>
                     <jvmArguments>
-                        -Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5005
+                         -Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5005
                     </jvmArguments>
                 </configuration>-->
             </plugin>

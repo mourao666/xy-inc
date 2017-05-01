@@ -1,9 +1,9 @@
 package br.brothers.mourao.persistence.entity.builder;
 
+import br.brothers.mourao.persistence.entity.Attribute;
 import br.brothers.mourao.persistence.entity.Model;
 
 import java.util.List;
-import java.util.Map;
 
 public class ModelBuilder {
 
@@ -27,18 +27,8 @@ public class ModelBuilder {
         return this;
     }
 
-    public ModelBuilder collectionName(String collectionName) {
-        model.setCollectionName(collectionName);
-        return this;
-    }
-
-    public ModelBuilder attributes(Map<String, String> attributes) {
+    public ModelBuilder attributes(List<Attribute> attributes) {
         model.setAttributes(attributes);
-        return this;
-    }
-
-    public ModelBuilder restResources(List<String> restResources) {
-        model.setRestResources(restResources);
         return this;
     }
 

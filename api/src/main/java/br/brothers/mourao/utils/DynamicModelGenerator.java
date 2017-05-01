@@ -1,17 +1,11 @@
 package br.brothers.mourao.utils;
 
-import br.brothers.mourao.exception.TypeNotExistsException;
-import br.brothers.mourao.persistence.entity.Model;
 import javassist.CannotCompileException;
 import javassist.ClassPool;
 import javassist.CtClass;
 import javassist.CtField;
 import javassist.CtMethod;
 import javassist.NotFoundException;
-import javassist.bytecode.AnnotationsAttribute;
-import javassist.bytecode.ClassFile;
-import javassist.bytecode.ConstPool;
-import javassist.bytecode.annotation.Annotation;
 
 import java.io.Serializable;
 import java.util.Map;
@@ -20,43 +14,29 @@ public class DynamicModelGenerator {
 
     private static final ClassPool pool = ClassPool.getDefault();
 
-    private static final String CLASS_PATH = "br.brothers.mourao.generated.";
-    private static final String ID_ATTRIBUTE_NAME = "id";
-    private static final String ID_ATTRIBUTE_TYPE = "String";
-    private static final String ID_ANNOTATION_NAME = "org.springframework.data.annotation.Id";
-    private static final String DOCUMENT_ANNOTATION_NAME = "org.springframework.data.mongodb.core.mapping.Document";
+    public static Class generate(String modelName, Map<String, Class<?>> attributes)
+        throws ClassNotFoundException,
+            NotFoundException,
+            CannotCompileException {
 
-    public static Class generate(Model model)
-        throws NotFoundException,
-            CannotCompileException,
-            TypeNotExistsException,
-            ClassNotFoundException {
+        CtClass cc = pool.getOrNull(modelName);
 
-        model.getAttributes().put(ID_ATTRIBUTE_NAME, ID_ATTRIBUTE_TYPE);
-
-        String className = CLASS_PATH + model.getName();
-        CtClass cc = pool.getOrNull(className);
-
-        if (cc == null) {
-
-            cc = pool.makeClass(CLASS_PATH + model.getName());
-
-            addAnnotation(cc, DOCUMENT_ANNOTATION_NAME);
-            cc.addInterface(resolveCtClass(Serializable.class));
-
-            for (Map.Entry<String, String> entry : model.getAttributes().entrySet()) {
-                Class fieldClass = TypeFactory.getType(entry.getValue());
-                cc.addField(new CtField(resolveCtClass(fieldClass), entry.getKey(), cc));
-                cc.addMethod(generateGetter(cc, entry.getKey(), fieldClass));
-                cc.addMethod(generateSetter(cc, entry.getKey(), fieldClass));
-            }
-
-            addAnnotation(cc, ID_ATTRIBUTE_NAME, ID_ANNOTATION_NAME);
-
-            return cc.toClass();
-        } else {
-            return Class.forName(className, false, pool.getClassLoader());
+        if (cc != null) {
+            return Class.forName(modelName, false, pool.getClassLoader());
         }
+
+        cc = pool.makeClass(modelName);
+        cc.addInterface(resolveCtClass(Serializable.class));
+
+        for (Map.Entry<String, Class<?>> entry : attributes.entrySet()) {
+            cc.addField(new CtField(resolveCtClass(entry.getValue()), entry.getKey(), cc));
+            cc.addMethod(generateGetter(cc, entry.getKey(), entry.getValue()));
+            cc.addMethod(generateSetter(cc, entry.getKey(), entry.getValue()));
+        }
+
+        cc.addField(new CtField(resolveCtClass(String.class), "_id", cc));
+
+        return cc.toClass();
     }
 
     private static CtClass resolveCtClass(Class clazz)
@@ -91,35 +71,11 @@ public class DynamicModelGenerator {
         return CtMethod.make(sb.toString(), declaringClass);
     }
 
-    private static void addAnnotation(CtClass cc, String annotationName) {
-
-        ClassFile classFile = cc.getClassFile();
-        ConstPool cp = classFile.getConstPool();
-
-        AnnotationsAttribute attr = new AnnotationsAttribute(cp, AnnotationsAttribute.visibleTag);
-        Annotation annotation = new Annotation(annotationName, cp);
-        attr.addAnnotation(annotation);
-        classFile.addAttribute(attr);
-    }
-
-    private static void addAnnotation(CtClass cc, String field, String annotationName)
-            throws NotFoundException {
-
-        ClassFile classFile = cc.getClassFile();
-        ConstPool cp = classFile.getConstPool();
-        CtField cf  = cc.getField(field);
-
-        AnnotationsAttribute attr = new AnnotationsAttribute(cp, AnnotationsAttribute.visibleTag);
-        Annotation annotation = new Annotation(annotationName, cp);
-        attr.addAnnotation(annotation);
-        cf.getFieldInfo().addAttribute(attr);
-    }
-
-    public static String generateGetterName(String fieldName) {
+    private static String generateGetterName(String fieldName) {
         return generateMethodNameWithPrefix("get", fieldName);
     }
 
-    public static String generateSetterName(String fieldName) {
+    private static String generateSetterName(String fieldName) {
         return generateMethodNameWithPrefix("set", fieldName);
     }
 

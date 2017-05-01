@@ -1,4 +1,4 @@
-package br.brothers.mourao.controller;
+package br.brothers.mourao.trash;
 
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RequestMapping;

@@ -1,4 +1,4 @@
-package br.brothers.mourao.exception;
+package br.brothers.mourao.trash;
 
 public class CannotInstantiateException extends Exception {
 
