@@ -22,7 +22,8 @@ public class DynamicModelService {
     public Class generate(Model model)
         throws CannotCompileException,
             NotFoundException,
-            TypeNotExistsException {
+            TypeNotExistsException,
+            ClassNotFoundException {
         LOGGER.info("Generating dynamic class by model {}", model);
         return DynamicModelGenerator.generate(model);
     }
@@ -30,6 +31,19 @@ public class DynamicModelService {
     public String createCollection(String name) {
         LOGGER.info("Creating dynamic collection by name '{}'", name);
         return dynamicModelRepository.createCollection(name);
+    }
+
+    public void saveRecord(Object obj) {
+        LOGGER.info("Saving dynamic '{}' record", obj.getClass().getName());
+        dynamicModelRepository.saveRecord(obj);
+    }
+
+    public String getGetter(String field) {
+        return DynamicModelGenerator.generateGetterName(field);
+    }
+
+    public String getSetter(String field) {
+        return DynamicModelGenerator.generateSetterName(field);
     }
 
 }

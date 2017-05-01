@@ -18,6 +18,9 @@ import java.util.Map;
 
 public class DynamicModelGenerator {
 
+    private static final ClassPool pool = ClassPool.getDefault();
+
+    private static final String CLASS_PATH = "br.brothers.mourao.generated.";
     private static final String ID_ATTRIBUTE_NAME = "id";
     private static final String ID_ATTRIBUTE_TYPE = "String";
     private static final String ID_ANNOTATION_NAME = "org.springframework.data.annotation.Id";
@@ -26,26 +29,34 @@ public class DynamicModelGenerator {
     public static Class generate(Model model)
         throws NotFoundException,
             CannotCompileException,
-            TypeNotExistsException {
+            TypeNotExistsException,
+            ClassNotFoundException {
 
         model.getAttributes().put(ID_ATTRIBUTE_NAME, ID_ATTRIBUTE_TYPE);
 
-        ClassPool pool = ClassPool.getDefault();
-        CtClass cc = pool.makeClass(model.getName());
+        String className = CLASS_PATH + model.getName();
+        CtClass cc = pool.getOrNull(className);
 
-        addAnnotation(cc, DOCUMENT_ANNOTATION_NAME);
-        cc.addInterface(resolveCtClass(Serializable.class));
+        if (cc == null) {
 
-        for (Map.Entry<String, String> entry : model.getAttributes().entrySet()) {
-            Class fieldClass = TypeFactory.getType(entry.getValue());
-            cc.addField(new CtField(resolveCtClass(fieldClass), entry.getKey(), cc));
-            cc.addMethod(generateGetter(cc, entry.getKey(), fieldClass));
-            cc.addMethod(generateSetter(cc, entry.getKey(), fieldClass));
+            cc = pool.makeClass(CLASS_PATH + model.getName());
+
+            addAnnotation(cc, DOCUMENT_ANNOTATION_NAME);
+            cc.addInterface(resolveCtClass(Serializable.class));
+
+            for (Map.Entry<String, String> entry : model.getAttributes().entrySet()) {
+                Class fieldClass = TypeFactory.getType(entry.getValue());
+                cc.addField(new CtField(resolveCtClass(fieldClass), entry.getKey(), cc));
+                cc.addMethod(generateGetter(cc, entry.getKey(), fieldClass));
+                cc.addMethod(generateSetter(cc, entry.getKey(), fieldClass));
+            }
+
+            addAnnotation(cc, ID_ATTRIBUTE_NAME, ID_ANNOTATION_NAME);
+
+            return cc.toClass();
+        } else {
+            return Class.forName(className, false, pool.getClassLoader());
         }
-
-        addAnnotation(cc, ID_ATTRIBUTE_NAME, ID_ANNOTATION_NAME);
-
-        return cc.toClass();
     }
 
     private static CtClass resolveCtClass(Class clazz)
@@ -57,7 +68,7 @@ public class DynamicModelGenerator {
     private static CtMethod generateGetter(CtClass declaringClass, String fieldName, Class fieldClass)
         throws CannotCompileException {
 
-        String getterName = "get" + fieldName.substring(0, 1).toUpperCase() + fieldName.substring(1);
+        String getterName = generateGetterName(fieldName);
 
         StringBuffer sb = new StringBuffer();
         sb.append("public ").append(fieldClass.getName()).append(" ").append(getterName).append("(){")
@@ -70,7 +81,7 @@ public class DynamicModelGenerator {
     private static CtMethod generateSetter(CtClass declaringClass, String fieldName, Class fieldClass)
         throws CannotCompileException {
 
-        String setterName = "set" + fieldName.substring(0, 1).toUpperCase() + fieldName.substring(1);
+        String setterName = generateSetterName(fieldName);
 
         StringBuffer sb = new StringBuffer();
         sb.append("public void ").append(setterName).append("(").append(fieldClass.getName()).append(" ").append(fieldName).append(")").append("{")
@@ -102,6 +113,18 @@ public class DynamicModelGenerator {
         Annotation annotation = new Annotation(annotationName, cp);
         attr.addAnnotation(annotation);
         cf.getFieldInfo().addAttribute(attr);
+    }
+
+    public static String generateGetterName(String fieldName) {
+        return generateMethodNameWithPrefix("get", fieldName);
+    }
+
+    public static String generateSetterName(String fieldName) {
+        return generateMethodNameWithPrefix("set", fieldName);
+    }
+
+    private static String generateMethodNameWithPrefix(String prefix, String fieldName) {
+        return prefix + fieldName.substring(0, 1).toUpperCase() + fieldName.substring(1);
     }
 
     private DynamicModelGenerator() {

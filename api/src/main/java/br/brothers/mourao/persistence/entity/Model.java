@@ -42,6 +42,7 @@ public class Model implements Serializable {
 
     public void setName(String name) {
         this.name = name;
+        setCollectionName(name);
     }
 
     public String getCollectionName() {
@@ -49,7 +50,7 @@ public class Model implements Serializable {
     }
 
     public void setCollectionName(String collectionName) {
-        this.collectionName = collectionName;
+        this.collectionName = collectionName != null ? collectionName.toLowerCase() : null;
     }
 
     public Map<String, String> getAttributes() {

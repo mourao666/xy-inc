@@ -31,18 +31,15 @@ public class ModelService {
             TypeNotExistsException,
             CannotGeneratedException {
 
-        model.setCollectionName(model.getName().toLowerCase());
-
         if (findByCollectionName(model.getCollectionName()) != null) {
-            String message = String.format("Model '%s' already exists on domain", model.getName());
-            throw new ModelAlreadyExistsException(message);
+            throw new ModelAlreadyExistsException(String.format("Model '%s' already exists on domain", model.getName()));
         }
 
         LOGGER.info("Creating new model: {}", model);
 
         try {
             dynamicModelService.generate(model);
-        } catch (CannotCompileException | NotFoundException e) {
+        } catch (CannotCompileException | NotFoundException | ClassNotFoundException e) {
             String message = String.format("Model '%s' can not be created. %s", model.getName(), e.getMessage());
             LOGGER.error(message, e);
             throw new CannotGeneratedException(message);

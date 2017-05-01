@@ -4,4 +4,6 @@ public interface DynamicModelRepository {
 
     String createCollection(String name);
 
+    void saveRecord(Object obj);
+
 }

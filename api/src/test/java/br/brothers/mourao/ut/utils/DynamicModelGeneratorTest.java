@@ -32,9 +32,10 @@ public class DynamicModelGeneratorTest extends UnitTest {
             NotFoundException,
             TypeNotExistsException,
             NoSuchFieldException,
-            NoSuchMethodException {
+            NoSuchMethodException,
+            ClassNotFoundException {
         Class clazz = DynamicModelGenerator.generate(model);
-        Assert.assertTrue("Test".equals(clazz.getName()));
+        Assert.assertTrue("br.brothers.mourao.generated.Test".equals(clazz.getName()));
         Assert.assertEquals(3, clazz.getDeclaredFields().length);
         clazz.getMethod("getId");
         clazz.getMethod("getFoo");
@@ -47,9 +48,21 @@ public class DynamicModelGeneratorTest extends UnitTest {
         //System.out.println(clazz.newInstance());
     }
 
+    @Test(expected = TypeNotExistsException.class)
+    public void generateTypeNotExistsExceptionTest()
+        throws TypeNotExistsException,
+            CannotCompileException,
+            NotFoundException,
+            ClassNotFoundException {
+        model.setName("TestTypeNotExists");
+        model.getAttributes().put("notExist", "nonexistent");
+        DynamicModelGenerator.generate(model);
+        model.setName("Test");
+        model.getAttributes().remove("notExist");
+    }
+
     // TODO - Test NotFoundException
     // TODO - Test CannotCompileException
-    // TODO - Test TypeNotExistsException
     // TODO - Test IllegalAccessException
     // TODO - Test InstantiationException
 

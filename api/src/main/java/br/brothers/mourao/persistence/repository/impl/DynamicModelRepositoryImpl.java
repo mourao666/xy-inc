@@ -18,4 +18,9 @@ public class DynamicModelRepositoryImpl implements DynamicModelRepository {
         return collection.getName();
     }
 
+    @Override
+    public void saveRecord(Object obj) {
+        mongoTemplate.insert(obj);
+    }
+
 }
