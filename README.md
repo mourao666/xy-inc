@@ -29,6 +29,7 @@ mvn clean package
 
 ## Execução
 
+
 1. Suba o banco de dados com o comando:
 
 ```
@@ -47,11 +48,11 @@ Para criar um modelo faça uma requisição POST na url: `http://localhost:8080/
 
 ```
 {
-	"name": "ModelName",
+	"name": "Foo",
 	"attributes": {
-		"attribute1": "attributeType",
-		"attribute2": "attributeType",
-		"attributeN": "attributeType"
+		"foo": "int",
+		"bar": "String",
+		"fooBar": "Boolean"
 	}
 }
 ```
@@ -61,11 +62,39 @@ Os tipos de atributos aceitos são:
 * Boolean
 * char
 * Character
-* Date
+* Date (dd/MM/yyyy HH:mm:ss)
 * Double
 * Float
 * int
 * Integer
 * Long
 * String
+
+### CRUD dos registros
+
+Para criar um registro faça uma requisição POST na url: `http://localhost:8080/api/Foo` passando como corpo da requisição o JSON:
+
+```
+{
+	"foo": 123,
+	"bar": "321",
+	"fooBar": true
+}
+```
+
+Para alterar um registro faça uma requisição PUT na url: `http://localhost:8080/api/Foo/7166b98d-9526-4509-bb5f-4db62f2e5342` passando como corpo da requisição o JSON:
+
+```
+{
+	"foo": 123,
+	"bar": "321",
+	"fooBar": false
+}
+```
+
+Para deletar um registro faça uma requisição DELETE na url: `http://localhost:8080/api/Foo/7166b98d-9526-4509-bb5f-4db62f2e5342`
+
+Para buscar um registro faça uma requisição GET na url: `http://localhost:8080/api/Foo/7166b98d-9526-4509-bb5f-4db62f2e5342`
+
+Para buscar todos os registros faça uma requisição GET na url: `http://localhost:8080/api/Foo`
 

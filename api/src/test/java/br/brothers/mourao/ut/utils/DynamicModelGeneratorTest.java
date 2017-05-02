@@ -22,8 +22,17 @@ public class DynamicModelGeneratorTest extends br.brothers.mourao.Test {
     public static void init()
         throws TypeNotExistsException {
         attributes = new HashMap<>();
-        attributes.put("foo", TypeFactory.getType("int").getClazz());
-        attributes.put("bar", TypeFactory.getType("String").getClazz());
+        attributes.put("foo01", TypeFactory.getType("bool").getClazz());
+        attributes.put("foo02", TypeFactory.getType("Boolean").getClazz());
+        attributes.put("foo03", TypeFactory.getType("char").getClazz());
+        attributes.put("foo04", TypeFactory.getType("Character").getClazz());
+        attributes.put("foo05", TypeFactory.getType("Date").getClazz());
+        attributes.put("foo06", TypeFactory.getType("Double").getClazz());
+        attributes.put("foo07", TypeFactory.getType("Float").getClazz());
+        attributes.put("foo08", TypeFactory.getType("int").getClazz());
+        attributes.put("foo09", TypeFactory.getType("Integer").getClazz());
+        attributes.put("foo10", TypeFactory.getType("Long").getClazz());
+        attributes.put("foo11", TypeFactory.getType("String").getClazz());
     }
 
     @Test
@@ -33,7 +42,7 @@ public class DynamicModelGeneratorTest extends br.brothers.mourao.Test {
             ClassNotFoundException {
         Class clazz = DynamicModelGenerator.generate("Foo", attributes);
         Assert.assertTrue("Foo".equals(clazz.getName()));
-        Assert.assertEquals(3, clazz.getDeclaredFields().length);
+        Assert.assertEquals(12, clazz.getDeclaredFields().length);
     }
 
 }

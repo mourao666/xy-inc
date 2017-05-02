@@ -5,11 +5,14 @@ import br.brothers.mourao.exception.InvalidTypeAttribute;
 import br.brothers.mourao.persistence.entity.Attribute;
 import br.brothers.mourao.persistence.entity.Model;
 import br.brothers.mourao.exception.ModelNotExistsException;
+import br.brothers.mourao.persistence.entity.enums.Type;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -88,10 +91,18 @@ public class RecordModelService {
         throws InvalidTypeAttribute {
         StringBuilder sb = new StringBuilder();
         for (Attribute attribute : model.getAttributes()) {
-            Class clazz1 = attribute.getType().getClazz();
-            Class clazz2 = attributes.get(attribute.getName()).getClass();
-            if (!clazz1.isAssignableFrom(clazz2)) {
-                sb.append(String.format(" %s.", attribute.getName()));
+            if (attribute.getType().equals(Type.DATE)) {
+                try {
+                    new SimpleDateFormat("dd/MM/yyyy HH:mm:ss").parse(attributes.get(attribute.getName()).toString());
+                } catch (ParseException e) {
+                    sb.append(String.format(" %s.", attribute.getName()));
+                }
+            } else {
+                Class clazz1 = attribute.getType().getClazz();
+                Class clazz2 = attributes.get(attribute.getName()).getClass();
+                if (!clazz1.isAssignableFrom(clazz2)) {
+                    sb.append(String.format(" %s.", attribute.getName()));
+                }
             }
         }
         if (!sb.toString().isEmpty()) {
