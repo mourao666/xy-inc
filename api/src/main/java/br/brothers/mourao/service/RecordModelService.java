@@ -28,10 +28,7 @@ public class RecordModelService {
     public List<Object> findAll(String modelName)
         throws CannotGeneratedException,
             ModelNotExistsException {
-        Model model = modelService.findByName(modelName);
-        if (model == null) {
-            throw new ModelNotExistsException(String.format("Model '%s' not exists on domain", model.getName()));
-        }
+        Model model = getModelOrThrow(modelName);
         LOGGER.info("Searching all records for model {}", model);
         return dynamicModelService.findAllRecords(model);
     }
@@ -39,10 +36,7 @@ public class RecordModelService {
     public Object findById(String modelName, String id)
         throws CannotGeneratedException,
             ModelNotExistsException {
-        Model model = modelService.findByName(modelName);
-        if (model == null) {
-            throw new ModelNotExistsException(String.format("Model '%s' not exists on domain", model.getName()));
-        }
+        Model model = getModelOrThrow(modelName);
         LOGGER.info("Searching records for model {} with id '{}'", model, id);
         return dynamicModelService.findRecord(model, id);
     }
@@ -64,10 +58,7 @@ public class RecordModelService {
     private Map<String, Object> save(String modelName, Map<String, Object> attributes)
         throws ModelNotExistsException,
             InvalidTypeAttribute {
-        Model model = modelService.findByName(modelName);
-        if (model == null) {
-            throw new ModelNotExistsException(String.format("Model %s not exists on domain", modelName));
-        }
+        Model model = getModelOrThrow(modelName);
         validateAttributes(model, attributes);
         LOGGER.info("Saving new record for model {} with attributes {}", model, attributes);
         dynamicModelService.saveRecord(model, attributes);
@@ -77,11 +68,20 @@ public class RecordModelService {
     public Object deleteById(String modelName, String id)
         throws CannotGeneratedException,
             ModelNotExistsException {
-        Model model = modelService.findByName(modelName);
+        Model model = getModelOrThrow(modelName);
         Object record = findById(model.getName(), id);
         LOGGER.info("Deleting record id '{}' for model {}", id, model);
         dynamicModelService.deleteRecord(record, model.getName());
         return record;
+    }
+
+    private Model getModelOrThrow(String modelName)
+        throws ModelNotExistsException {
+        Model model = modelService.findByName(modelName);
+        if (model == null) {
+            throw new ModelNotExistsException(String.format("Model '%s' not exists on domain", modelName));
+        }
+        return model;
     }
 
     private void validateAttributes(Model model, Map<String, Object> attributes)

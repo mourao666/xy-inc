@@ -1,57 +1,39 @@
 package br.brothers.mourao.ut.utils;
 
-import br.brothers.mourao.ut.UnitTest;
+import br.brothers.mourao.exception.TypeNotExistsException;
+import br.brothers.mourao.persistence.entity.enums.TypeFactory;
+import br.brothers.mourao.utils.DynamicModelGenerator;
+import javassist.CannotCompileException;
+import javassist.NotFoundException;
+import org.junit.Assert;
+import org.junit.BeforeClass;
+import org.junit.Test;
+import org.springframework.test.context.TestPropertySource;
 
-public abstract class DynamicModelGeneratorTest extends UnitTest {
+import java.util.HashMap;
+import java.util.Map;
 
-//    private static Model model;
+@TestPropertySource(properties = { "spring.data.mongodb.port=27668" })
+public class DynamicModelGeneratorTest extends br.brothers.mourao.Test {
 
-//    @BeforeClass
-//    public static void init() {
-//        Map<String, String> attributes = new HashMap<>();
-//        attributes.put("foo", "Integer");
-//        attributes.put("bar", "String");
-//        model = new ModelBuilder().name("Test").attributes(attributes).build();
-//    }
+    private static Map<String, Class<?>> attributes;
 
-//    @Test
-//    public void generateSuccessTest()
-//        throws CannotCompileException,
-//            NotFoundException,
-//            TypeNotExistsException,
-//            NoSuchFieldException,
-//            NoSuchMethodException,
-//            ClassNotFoundException {
-//        Class clazz = DynamicModelGenerator.generate(model);
-//        Assert.assertTrue("br.brothers.mourao.generated.Test".equals(clazz.getName()));
-//        Assert.assertEquals(3, clazz.getDeclaredFields().length);
-//        clazz.getMethod("getId");
-//        clazz.getMethod("getFoo");
-//        clazz.getMethod("getBar");
-//        clazz.getMethod("setId", String.class);
-//        clazz.getMethod("setFoo", Integer.class);
-//        clazz.getMethod("setBar", String.class);
-//        Assert.assertEquals(1, clazz.getDeclaredField("id").getAnnotations().length);
-//        Assert.assertEquals(1, clazz.getAnnotations().length);
-//        //System.out.println(clazz.newInstance());
-//    }
+    @BeforeClass
+    public static void init()
+        throws TypeNotExistsException {
+        attributes = new HashMap<>();
+        attributes.put("foo", TypeFactory.getType("int").getClazz());
+        attributes.put("bar", TypeFactory.getType("String").getClazz());
+    }
 
-//    @Test(expected = TypeNotExistsException.class)
-//    public void generateTypeNotExistsExceptionTest()
-//        throws TypeNotExistsException,
-//            CannotCompileException,
-//            NotFoundException,
-//            ClassNotFoundException {
-//        model.setName("TestTypeNotExists");
-//        model.getAttributes().put("notExist", "nonexistent");
-//        DynamicModelGenerator.generate(model);
-//        model.setName("Test");
-//        model.getAttributes().remove("notExist");
-//    }
-
-    // TODO - Test NotFoundException
-    // TODO - Test CannotCompileException
-    // TODO - Test IllegalAccessException
-    // TODO - Test InstantiationException
+    @Test
+    public void generateSuccessTest()
+        throws CannotCompileException,
+            NotFoundException,
+            ClassNotFoundException {
+        Class clazz = DynamicModelGenerator.generate("Foo", attributes);
+        Assert.assertTrue("Foo".equals(clazz.getName()));
+        Assert.assertEquals(3, clazz.getDeclaredFields().length);
+    }
 
 }
